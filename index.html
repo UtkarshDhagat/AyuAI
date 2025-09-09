@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Patient Deterioration Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Clinical Calm -->
+    <!-- Application Structure Plan: The SPA is a single, public-facing page with a fixed navigation bar for seamless scrolling between three main sections: Overview, Dashboard, and Profile Creation. The dashboard now includes a model selection dropdown to simulate the system's flexibility. This structure allows users to view data, interact with core features, and input new information within a logical, non-linear flow. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Cohort View & Patient Details -> Goal: Inform & Interact -> Viz: Simulated Dashboard with lists and charts -> Interaction: Clicking a patient updates charts/data in the detail view; selecting a model in the dropdown triggers a simulated change -> Justification: Provides a tangible, interactive feel for the final product and its core functionality. It is the central, most critical piece of the report. -> Library: Chart.js + Vanilla JS.
+        - Report Info: Profile Creation -> Goal: Data Entry -> Viz: Simple form with input fields and a button -> Interaction: Form submission to simulate profile creation -> Justification: Provides a clear, task-focused UI for adding new data, demonstrating the system's potential for data ingestion. -> Method: HTML Form + Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-blue-600">PatientDeterioration.AI</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Overview</a>
+                        <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Dashboard</a>
+                        <a href="#profile" class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent">Profile</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="overview" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                    AI-Driven Patient Deterioration Prediction
+                </h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg text-gray-600">
+                    This interactive dashboard provides a proactive approach to patient care by identifying early signs of deterioration. Explore our methodology, model architecture, and the user-friendly interface we've designed for clinicians.
+                </p>
+            </div>
+        </section>
+
+        <section id="dashboard" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-900">Dashboard Mockup: Insights at a Glance</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                       Our dashboard is designed to provide both a high-level cohort view for population management and a detailed drill-down for individual patient analysis. Click on a patient in the list below to see how the detail view dynamically updates.
+                    </p>
+                </div>
+                <div class="mt-12 bg-white p-8 rounded-xl shadow-lg">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Cohort View</h3>
+                            <div class="mb-4">
+                                <label for="model-selector" class="block text-sm font-medium text-gray-700">Select Model</label>
+                                <select id="model-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option value="ensemble">Ensemble Approach</option>
+                                    <option value="xgboost">XGBoost & Random Forest</option>
+                                    <option value="adaboost">AdaBoost</option>
+                                    <option value="lstm">LSTM/RNN</option>
+                                </select>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner max-h-[500px] overflow-y-auto">
+                                <div class="space-y-2" id="patient-list">
+                                </div>
+                            </div>
+                            <p id="model-message" class="text-xs text-gray-600 mt-2 hidden">Data and charts would dynamically update based on the selected model in a real application.</p>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Patient Detail View: <span id="patient-name" class="text-blue-600"></span></h3>
+                            <div class="space-y-8">
+                                <div>
+                                    <h4 class="font-semibold text-gray-700">90-Day Risk Timeline</h4>
+                                    <p class="text-sm text-gray-500">Prediction of risk score over time with confidence intervals.</p>
+                                    <div class="chart-container h-64 sm:h-64 mt-2">
+                                        <canvas id="riskTimelineChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-700">Key Risk Drivers</h4>
+                                        <p class="text-sm text-gray-500">Top factors contributing to the current risk score.</p>
+                                        <ul id="key-drivers" class="mt-2 space-y-2 text-sm">
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-700">Vital Signs Trend (Heart Rate)</h4>
+                                        <p class="text-sm text-gray-500">Trend analysis of a key vital sign over time.</p>
+                                        <div class="chart-container h-48 sm:h-48 mt-2">
+                                            <canvas id="vitalSignsChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-700">Chat Interface (MCP + Ollama)</h4>
+                                    <p class="text-sm text-gray-500 mb-4">A simulated chat interaction for natural language queries.</p>
+                                    <div class="bg-gray-100 rounded-lg p-6 shadow-inner min-h-[150px]">
+                                        <div class="space-y-4">
+                                            <div class="flex justify-start">
+                                                <p class="bg-gray-300 p-3 rounded-lg max-w-xs text-sm">Hello, how can I help you understand this patient's risk?</p>
+                                            </div>
+                                            <div class="flex justify-end">
+                                                <p class="bg-blue-500 text-white p-3 rounded-lg max-w-xs text-sm">Why is Rohan Sharma's risk score so high?</p>
+                                            </div>
+                                            <div class="flex justify-start">
+                                                <p class="bg-gray-300 p-3 rounded-lg max-w-xs text-sm">His risk is elevated due to a significant rise in lactate levels and an increasing respiratory rate. These are the primary contributing factors based on the latest data.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <section id="profile" class="py-20 bg-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h2 class="text-3xl font-bold text-gray-900">Create a New Patient Profile</h2>
+                        <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                            Enter the details below to create a new patient profile and see how it would be added to the system.
+                        </p>
+                    </div>
+                    <div class="mt-12 bg-gray-50 p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+                        <form id="profile-form" class="space-y-6">
+                            <div>
+                                <label for="profile-name" class="block text-gray-700 font-semibold mb-2">Patient Name</label>
+                                <input type="text" id="profile-name" name="profile-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+                            <div>
+                                <label for="profile-age" class="block text-gray-700 font-semibold mb-2">Age</label>
+                                <input type="number" id="profile-age" name="profile-age" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+                            <div>
+                                <label for="profile-condition" class="block text-gray-700 font-semibold mb-2">Chronic Condition</label>
+                                <input type="text" id="profile-condition" name="profile-condition" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label for="profile-history" class="block text-gray-700 font-semibold mb-2">Relevant Medical History</label>
+                                <textarea id="profile-history" name="profile-history" rows="4" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200">Create Profile</button>
+                        </form>
+                        <p id="profile-message" class="text-center text-sm mt-4 hidden"></p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-gray-800 text-white mt-20">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+                <p>&copy; 2025 AI-Driven Patient Deterioration Prediction Initiative. All Rights Reserved.</p>
+            </div>
+        </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const patientData = {
+                "1": { name: "Rohan Sharma", risk: 88, timeline: [20, 35, 50, 65, 80, 88], vitals: [88, 92, 95, 98, 102, 105], drivers: [{f: "Lactate Trend", v: "+0.4", c: 'text-red-600'}, {f: "Resp. Rate Var.", v: "+0.2", c: 'text-red-600'}, {f: "Patient Age", v: "+0.15", c: 'text-red-600'}] },
+                "2": { name: "Priya Singh", risk: 72, timeline: [25, 30, 45, 55, 65, 72], vitals: [75, 74, 78, 80, 82, 85], drivers: [{f: "Prior Condition", v: "+0.3", c: 'text-red-600'}, {f: "Blood Pressure", v: "+0.2", c: 'text-red-600'}, {f: "Good Med Adherence", v: "-0.1", c: 'text-blue-600'}] },
+                "3": { name: "Anand Patel", risk: 45, timeline: [18, 25, 30, 35, 40, 45], vitals: [70, 69, 72, 71, 74, 75], drivers: [{f: "Stable Vitals", v: "-0.2", c: 'text-blue-600'}, {f: "Recent Visit", v: "-0.1", c: 'text-blue-600'}, {f: "Low Resp. Rate", v: "-0.05", c: 'text-blue-600'}] },
+                "4": { name: "Sneha Kumar", risk: 21, timeline: [12, 15, 14, 18, 20, 21], vitals: [62, 65, 63, 66, 68, 67], drivers: [{f: "No Chronic Cond.", v: "-0.3", c: 'text-blue-600'}, {f: "Young Age", v: "-0.2", c: 'text-blue-600'}, {f: "High Med Adherence", v: "-0.15", c: 'text-blue-600'}] },
+                "5": { name: "Vikram Reddy", risk: 95, timeline: [30, 45, 60, 75, 85, 95], vitals: [95, 98, 102, 105, 110, 115], drivers: [{f: "SpO2 Drop", v: "+0.5", c: 'text-red-600'}, {f: "Resp. Rate Rise", v: "+0.3", c: 'text-red-600'}, {f: "Age", v: "+0.2", c: 'text-red-600'}] },
+                "6": { name: "Neha Sharma", risk: 55, timeline: [20, 25, 30, 40, 50, 55], vitals: [72, 75, 78, 81, 84, 86], drivers: [{f: "Blood Sugar Spike", v: "+0.15", c: 'text-red-600'}, {f: "Weight Gain", v: "+0.1", c: 'text-red-600'}, {f: "No Prior History", v: "-0.2", c: 'text-blue-600'}] },
+                "7": { name: "Amit Gupta", risk: 38, timeline: [15, 20, 22, 28, 35, 38], vitals: [68, 70, 71, 73, 75, 76], drivers: [{f: "Stable BP", v: "-0.15", c: 'text-blue-600'}, {f: "Recent Checkup", v: "-0.1", c: 'text-blue-600'}, {f: "No Smoking History", v: "-0.05", c: 'text-blue-600'}] },
+                "8": { name: "Pooja Das", risk: 65, timeline: [30, 35, 45, 55, 60, 65], vitals: [80, 85, 88, 90, 92, 95], drivers: [{f: "Temperature Fluctuation", v: "+0.3", c: 'text-red-600'}, {f: "Blood Pressure Increase", v: "+0.2", c: 'text-red-600'}, {f: "Good Diet", v: "-0.1", c: 'text-blue-600'}] }
+            };
+
+            const patientListEl = document.getElementById('patient-list');
+            const patientNameEl = document.getElementById('patient-name');
+            const keyDriversEl = document.getElementById('key-drivers');
+            const modelSelectorEl = document.getElementById('model-selector');
+            const modelMessageEl = document.getElementById('model-message');
+            let riskTimelineChart, vitalSignsChart;
+
+            function createCharts() {
+                const riskCtx = document.getElementById('riskTimelineChart').getContext('2d');
+                riskTimelineChart = new Chart(riskCtx, {
+                    type: 'line',
+                    options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false }}, scales: {y: {title: {display: true, text: "Risk Score"}, min: 0, max: 100}} }
+                });
+                const vitalCtx = document.getElementById('vitalSignsChart').getContext('2d');
+                vitalSignsChart = new Chart(vitalCtx, {
+                    type: 'line',
+                    options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false }}, scales: {y: {title: {display: true, text: "BPM"}}} }
+                });
+            }
+
+            function updateDashboard(patientId) {
+                const data = patientData[patientId];
+                patientNameEl.textContent = data.name;
+                
+                keyDriversEl.innerHTML = data.drivers.map(d => `
+                    <li class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                        <span class="font-medium">${d.f}</span>
+                        <span class="font-semibold ${d.c}">${d.v}</span>
+                    </li>
+                `).join('');
+
+                const chartLabels = ['-5d', '-4d', '-3d', '-2d', '-1d', 'Today'];
+
+                riskTimelineChart.data = {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Risk Score',
+                        data: data.timeline,
+                        borderColor: 'rgb(239, 68, 68)',
+                        tension: 0.1,
+                        fill: false,
+                    }]
+                };
+                riskTimelineChart.update();
+
+                vitalSignsChart.data = {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Heart Rate',
+                        data: data.vitals,
+                        borderColor: 'rgb(59, 130, 246)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                };
+                vitalSignsChart.update();
+
+                document.querySelectorAll('.patient-item').forEach(el => el.classList.remove('bg-blue-100', 'shadow'));
+                document.querySelector(`.patient-item[data-id='${patientId}']`).classList.add('bg-blue-100', 'shadow');
+            }
+
+            Object.entries(patientData).forEach(([id, data]) => {
+                const riskColor = data.risk > 75 ? 'bg-red-500' : data.risk > 50 ? 'bg-yellow-500' : 'bg-green-500';
+                const item = document.createElement('div');
+                item.className = 'patient-item flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200';
+                item.dataset.id = id;
+                item.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="h-3 w-3 rounded-full ${riskColor} mr-3"></span>
+                        <div>
+                            <p class="font-semibold">${data.name}</p>
+                            <p class="text-xs text-gray-500">Risk Score: ${data.risk}</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-bold">${data.risk}</span>
+                `;
+                item.addEventListener('click', () => updateDashboard(id));
+                patientListEl.appendChild(item);
+            });
+
+            createCharts();
+            updateDashboard("1");
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            const allSections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                allSections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('href') == `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            modelSelectorEl.addEventListener('change', (e) => {
+                const selectedModel = e.target.options[e.target.selectedIndex].text;
+                modelMessageEl.textContent = `Model changed to "${selectedModel}". Patient data and predictions would now be updated in a real application.`;
+                modelMessageEl.classList.remove('hidden');
+                setTimeout(() => {
+                    modelMessageEl.classList.add('hidden');
+                }, 5000);
+            });
+
+            const profileForm = document.getElementById('profile-form');
+            const profileMessageEl = document.getElementById('profile-message');
+
+            profileForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('profile-name').value;
+                profileMessageEl.textContent = `Successfully created profile for ${name}! (Data not saved to a real database)`;
+                profileMessageEl.classList.remove('hidden');
+                profileMessageEl.classList.add('text-green-600');
+                profileForm.reset();
+            });
+        });
+    </script>
+</body>
+</html>
