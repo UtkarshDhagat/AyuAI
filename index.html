@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarePredict AI - Clinical Risk Prediction Platform</title>
+    <title>AyuAI - Clinical Risk Prediction Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
@@ -31,13 +31,6 @@
                             text: '#0f172a',
                             muted: '#64748b'
                         }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif']
-                    },
-                    boxShadow: {
-                        'clinical': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-                        'clinical-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                     }
                 }
             }
@@ -48,7 +41,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Inter', system-ui, sans-serif;
-            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
             background-color: #f8fafc;
         }
         
@@ -56,15 +48,6 @@
             position: relative; 
             height: 350px; 
             width: 100%;
-        }
-        
-        .loading-pulse { 
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
-        }
-        
-        @keyframes pulse { 
-            0%, 100% { opacity: 1; } 
-            50% { opacity: .5; } 
         }
         
         .risk-indicator {
@@ -95,36 +78,6 @@
             color: #3b82f6;
         }
         
-        .shap-bar {
-            height: 24px;
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .shap-positive { background: linear-gradient(90deg, #fef2f2 0%, #fecaca 100%); }
-        .shap-negative { background: linear-gradient(90deg, #f0f9ff 0%, #bae6fd 100%); }
-        
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        .status-online { background: #10b981; }
-        .status-warning { background: #f59e0b; }
-        .status-offline { background: #6b7280; }
-        
-        .timeline-point {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 3px solid white;
-            position: relative;
-            z-index: 10;
-        }
-        
         .modal {
             display: none;
             position: fixed;
@@ -134,9 +87,21 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
         }
         
         .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+        }
         
         .notification {
             position: fixed;
@@ -145,21 +110,44 @@
             z-index: 1001;
             min-width: 300px;
             max-width: 400px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
         
-        @media (max-width: 768px) {
-            .chart-container { height: 250px; }
+        .notification.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .notification.error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .notification.warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .loading-pulse { 
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+        }
+        
+        @keyframes pulse { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: .5; } 
         }
     </style>
 </head>
 <body class="bg-clinical-bg text-clinical-text">
     <!-- Navigation -->
-    <nav class="bg-clinical-surface border-b border-clinical-border sticky top-0 z-40 shadow-clinical">
+    <nav class="bg-clinical-surface border-b border-clinical-border sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-center h-16 px-4">
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-clinical">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
                             <i class="fas fa-heartbeat text-white text-lg"></i>
                         </div>
                         <div>
@@ -170,21 +158,16 @@
                 </div>
                 
                 <div class="hidden lg:flex items-center space-x-1">
-                    <nav-item href="#dashboard" icon="fas fa-chart-line">Dashboard</nav-item>
-                    <nav-item href="#analytics" icon="fas fa-analytics">Analytics</nav-item>
-                    <nav-item href="#patients" icon="fas fa-user-plus">Patients</nav-item>
-                    <nav-item href="#reports" icon="fas fa-file-medical">Reports</nav-item>
+                    <a href="#dashboard" class="nav-link px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 rounded-lg transition-colors">Dashboard</a>
+                    <a href="#analytics" class="nav-link px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 rounded-lg transition-colors">Analytics</a>
+                    <a href="#patients" class="nav-link px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 rounded-lg transition-colors">Patients</a>
                 </div>
                 
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-2">
-                        <span class="status-indicator status-online"></span>
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                         <span class="text-sm text-clinical-muted">System Online</span>
                     </div>
-                    <button id="settingsBtn" class="p-2 text-clinical-muted hover:text-clinical-text rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <div class="h-6 w-px bg-clinical-border"></div>
                     <div class="text-sm text-clinical-muted">
                         <div class="font-medium">Dr. Sarah Chen</div>
                         <div class="text-xs">Attending Physician</div>
@@ -196,27 +179,9 @@
 
     <!-- Main Application -->
     <main class="max-w-7xl mx-auto px-4 py-6">
-        <!-- Alert Banner -->
-        <div id="alertBanner" class="mb-6 hidden">
-            <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
-                    <div>
-                        <p class="text-sm text-red-800">
-                            <span class="font-medium">High Risk Alert:</span> 
-                            <span id="alertMessage">3 patients require immediate attention</span>
-                        </p>
-                    </div>
-                    <button id="dismissAlert" class="ml-auto text-red-400 hover:text-red-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Dashboard Header -->
         <section class="mb-8">
-            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical">
+            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm">
                 <div class="p-6">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                         <div class="mb-4 lg:mb-0">
@@ -224,7 +189,7 @@
                             <p class="text-clinical-muted">AI-powered 90-day deterioration risk prediction using ensemble learning models</p>
                             <div class="flex items-center mt-3 space-x-6 text-sm">
                                 <div class="flex items-center space-x-2">
-                                    <span class="status-indicator status-online"></span>
+                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                                     <span>Models Active</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
@@ -253,10 +218,6 @@
                                 <i class="fas fa-sync-alt"></i>
                                 <span>Refresh</span>
                             </button>
-                            <button id="exportBtn" class="border border-clinical-border text-clinical-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                                <i class="fas fa-download"></i>
-                                <span>Export</span>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -268,7 +229,7 @@
             <!-- Statistics Overview -->
             <div class="xl:col-span-12">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical p-6">
+                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm p-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-clinical-muted">High Risk Patients</p>
@@ -283,7 +244,7 @@
                         </div>
                     </div>
                     
-                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical p-6">
+                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm p-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-clinical-muted">Medium Risk</p>
@@ -298,7 +259,7 @@
                         </div>
                     </div>
                     
-                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical p-6">
+                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm p-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-clinical-muted">Low Risk</p>
@@ -313,7 +274,7 @@
                         </div>
                     </div>
                     
-                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical p-6">
+                    <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm p-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-clinical-muted">Model Accuracy</p>
@@ -332,7 +293,7 @@
 
             <!-- Patient Cohort List -->
             <div class="xl:col-span-5">
-                <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical h-full">
+                <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm h-full">
                     <div class="p-4 border-b border-clinical-border">
                         <div class="flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-clinical-text">Patient Cohort</h3>
@@ -358,7 +319,7 @@
 
             <!-- Patient Details Panel -->
             <div class="xl:col-span-7">
-                <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical h-full">
+                <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm h-full">
                     <div class="p-4 border-b border-clinical-border">
                         <div class="flex items-center justify-between">
                             <div>
@@ -371,9 +332,6 @@
                                 <button id="aiAssistantBtn" class="px-3 py-2 text-xs font-medium bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors flex items-center space-x-2">
                                     <i class="fas fa-robot"></i>
                                     <span>AI Assistant</span>
-                                </button>
-                                <button id="shareBtn" class="p-2 text-clinical-muted hover:text-clinical-text rounded-lg hover:bg-gray-100 transition-colors">
-                                    <i class="fas fa-share"></i>
                                 </button>
                             </div>
                         </div>
@@ -391,12 +349,6 @@
                             <button class="tab-btn py-3 px-1 border-b-2 border-transparent text-clinical-muted font-medium text-sm hover:text-clinical-text" data-tab="factors">
                                 SHAP Analysis
                             </button>
-                            <button class="tab-btn py-3 px-1 border-b-2 border-transparent text-clinical-muted font-medium text-sm hover:text-clinical-text" data-tab="vitals">
-                                Vitals
-                            </button>
-                            <button class="tab-btn py-3 px-1 border-b-2 border-transparent text-clinical-muted font-medium text-sm hover:text-clinical-text" data-tab="interventions">
-                                Interventions
-                            </button>
                         </nav>
                     </div>
                     
@@ -413,23 +365,16 @@
 
         <!-- Analytics Section -->
         <section id="analytics" class="mb-8">
-            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical">
+            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <h3 class="text-lg font-semibold text-clinical-text">Model Performance Analytics</h3>
                             <p class="text-sm text-clinical-muted">Comprehensive evaluation metrics and validation results</p>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <select id="analyticsTimeRange" class="border border-clinical-border rounded-lg px-3 py-2 text-sm bg-clinical-surface">
-                                <option value="7d">Last 7 days</option>
-                                <option value="30d">Last 30 days</option>
-                                <option value="90d">Last 90 days</option>
-                            </select>
-                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <!-- Performance Metrics -->
                         <div class="lg:col-span-1">
                             <h4 class="text-sm font-semibold text-clinical-text mb-4">Performance Metrics</h4>
@@ -438,28 +383,12 @@
                             </div>
                         </div>
                         
-                        <!-- Calibration Plot -->
+                        <!-- Feature Importance -->
                         <div class="lg:col-span-1">
-                            <h4 class="text-sm font-semibold text-clinical-text mb-4">Calibration Analysis</h4>
+                            <h4 class="text-sm font-semibold text-clinical-text mb-4">Feature Importance</h4>
                             <div class="chart-container">
-                                <canvas id="calibrationChart"></canvas>
+                                <canvas id="featureChart"></canvas>
                             </div>
-                        </div>
-                        
-                        <!-- ROC Curve -->
-                        <div class="lg:col-span-1">
-                            <h4 class="text-sm font-semibold text-clinical-text mb-4">ROC Curve</h4>
-                            <div class="chart-container">
-                                <canvas id="rocChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Global Feature Importance -->
-                    <div>
-                        <h4 class="text-sm font-semibold text-clinical-text mb-4">Global Feature Importance (Population Level)</h4>
-                        <div class="chart-container">
-                            <canvas id="featureImportanceChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -468,17 +397,13 @@
 
         <!-- Patient Registration -->
         <section id="patients" class="mb-8">
-            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical">
+            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-sm">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <h3 class="text-lg font-semibold text-clinical-text">Patient Registration & Management</h3>
                             <p class="text-sm text-clinical-muted">Add new patients to the risk monitoring system</p>
                         </div>
-                        <button id="bulkImportBtn" class="border border-clinical-border text-clinical-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                            <i class="fas fa-upload"></i>
-                            <span>Bulk Import</span>
-                        </button>
                     </div>
                     
                     <form id="patientRegistrationForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -490,8 +415,8 @@
                                 <label class="block text-sm font-medium text-clinical-text mb-2">
                                     Patient ID <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" name="patientId" id="patientId" required
-                                       class="w-full px-3 py-2 border border-clinical-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                <input type="text" name="patientId" id="patientId" required readonly
+                                       class="w-full px-3 py-2 border border-clinical-border rounded-lg bg-gray-50"
                                        placeholder="Auto-generated">
                             </div>
                             
@@ -545,35 +470,16 @@
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-clinical-text mb-2">Comorbidities</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="comorbidities" value="diabetes" class="rounded text-primary-600">
-                                        <span class="text-sm">Diabetes</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="comorbidities" value="hypertension" class="rounded text-primary-600">
-                                        <span class="text-sm">Hypertension</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="comorbidities" value="cardiovascular" class="rounded text-primary-600">
-                                        <span class="text-sm">Cardiovascular Disease</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2">
-                                        <input type="checkbox" name="comorbidities" value="kidney" class="rounded text-primary-600">
-                                        <span class="text-sm">Kidney Disease</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-clinical-text mb-2">Risk Category</label>
-                                <select name="initialRiskCategory"
+                                <label class="block text-sm font-medium text-clinical-text mb-2">Attending Physician</label>
+                                <select name="attendingPhysician"
                                         class="w-full px-3 py-2 border border-clinical-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                    <option value="">Auto-calculate</option>
-                                    <option value="low">Low Risk (0-40%)</option>
-                                    <option value="medium">Medium Risk (41-75%)</option>
-                                    <option value="high">High Risk (76-100%)</option>
+                                    <option value="">Select physician</option>
+                                    <option value="Dr. Sarah Chen">Dr. Sarah Chen</option>
+                                    <option value="Dr. Robert Martinez">Dr. Robert Martinez</option>
+                                    <option value="Dr. Emily Johnson">Dr. Emily Johnson</option>
+                                    <option value="Dr. Amit Patel">Dr. Amit Patel</option>
+                                    <option value="Dr. Lisa Wilson">Dr. Lisa Wilson</option>
+                                    <option value="Dr. Michelle Lee">Dr. Michelle Lee</option>
                                 </select>
                             </div>
                         </div>
@@ -581,18 +487,6 @@
                         <!-- Additional Information -->
                         <div class="space-y-4">
                             <h4 class="font-medium text-clinical-text">Additional Information</h4>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-clinical-text mb-2">Attending Physician</label>
-                                <select name="attendingPhysician"
-                                        class="w-full px-3 py-2 border border-clinical-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                    <option value="">Select physician</option>
-                                    <option value="dr_chen">Dr. Sarah Chen</option>
-                                    <option value="dr_martinez">Dr. Robert Martinez</option>
-                                    <option value="dr_johnson">Dr. Emily Johnson</option>
-                                    <option value="dr_patel">Dr. Amit Patel</option>
-                                </select>
-                            </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-clinical-text mb-2">Monitoring Parameters</label>
@@ -631,9 +525,6 @@
                                     <span class="text-red-500">*</span> Required fields
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <button type="button" id="previewBtn" class="border border-clinical-border text-clinical-text px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                                        Preview
-                                    </button>
                                     <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors flex items-center space-x-2">
                                         <i class="fas fa-plus"></i>
                                         <span>Register Patient</span>
@@ -647,63 +538,11 @@
                 </div>
             </div>
         </section>
-
-        <!-- Reports Section -->
-        <section id="reports" class="mb-8">
-            <div class="bg-clinical-surface rounded-lg border border-clinical-border shadow-clinical">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-lg font-semibold text-clinical-text">Clinical Reports & Documentation</h3>
-                            <p class="text-sm text-clinical-muted">Generate comprehensive reports for clinical review and regulatory compliance</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="border border-clinical-border rounded-lg p-4 hover:shadow-clinical-lg transition-shadow cursor-pointer" onclick="generateReport('population')">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-medium text-clinical-text">Population Risk Report</h4>
-                                <i class="fas fa-users text-primary-600"></i>
-                            </div>
-                            <p class="text-sm text-clinical-muted mb-4">Comprehensive analysis of risk distribution across patient population</p>
-                            <div class="text-xs text-clinical-muted">
-                                <i class="fas fa-clock mr-1"></i>
-                                Last generated: 2 hours ago
-                            </div>
-                        </div>
-                        
-                        <div class="border border-clinical-border rounded-lg p-4 hover:shadow-clinical-lg transition-shadow cursor-pointer" onclick="generateReport('model_performance')">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-medium text-clinical-text">Model Performance Report</h4>
-                                <i class="fas fa-chart-bar text-primary-600"></i>
-                            </div>
-                            <p class="text-sm text-clinical-muted mb-4">Detailed model validation metrics and performance analytics</p>
-                            <div class="text-xs text-clinical-muted">
-                                <i class="fas fa-clock mr-1"></i>
-                                Last generated: 6 hours ago
-                            </div>
-                        </div>
-                        
-                        <div class="border border-clinical-border rounded-lg p-4 hover:shadow-clinical-lg transition-shadow cursor-pointer" onclick="generateReport('clinical_outcomes')">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-medium text-clinical-text">Clinical Outcomes Report</h4>
-                                <i class="fas fa-heartbeat text-primary-600"></i>
-                            </div>
-                            <p class="text-sm text-clinical-muted mb-4">Analysis of patient outcomes and intervention effectiveness</p>
-                            <div class="text-xs text-clinical-muted">
-                                <i class="fas fa-clock mr-1"></i>
-                                Last generated: 1 day ago
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- AI Assistant Modal -->
     <div id="aiAssistantModal" class="modal">
-        <div class="modal-content bg-clinical-surface rounded-lg shadow-clinical-lg mx-auto my-auto max-w-2xl w-full max-h-[80vh] overflow-hidden">
+        <div class="modal-content">
             <div class="p-6 border-b border-clinical-border">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -740,104 +579,6 @@
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <button class="suggestion-btn px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
-                        Explain high risk factors
-                    </button>
-                    <button class="suggestion-btn px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
-                        Recommend interventions
-                    </button>
-                    <button class="suggestion-btn px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
-                        Compare with similar patients
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content bg-clinical-surface rounded-lg shadow-clinical-lg mx-auto my-auto max-w-lg w-full">
-            <div class="p-6 border-b border-clinical-border">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-clinical-text">System Settings</h3>
-                    <button id="closeSettingsModal" class="text-clinical-muted hover:text-clinical-text">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="p-6 space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-clinical-text mb-3">Alert Thresholds</label>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-clinical-muted">High Risk Alert</span>
-                            <select class="border border-clinical-border rounded px-2 py-1 text-sm">
-                                <option value="75">75%</option>
-                                <option value="80" selected>80%</option>
-                                <option value="85">85%</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-clinical-muted">Medium Risk Alert</span>
-                            <select class="border border-clinical-border rounded px-2 py-1 text-sm">
-                                <option value="40" selected>40%</option>
-                                <option value="45">45%</option>
-                                <option value="50">50%</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-clinical-text mb-3">Model Settings</label>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-clinical-muted">Auto-refresh Interval</span>
-                            <select class="border border-clinical-border rounded px-2 py-1 text-sm">
-                                <option value="5">5 minutes</option>
-                                <option value="15" selected>15 minutes</option>
-                                <option value="30">30 minutes</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-clinical-muted">Prediction Confidence Threshold</span>
-                            <select class="border border-clinical-border rounded px-2 py-1 text-sm">
-                                <option value="0.7">70%</option>
-                                <option value="0.8" selected>80%</option>
-                                <option value="0.9">90%</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-clinical-text mb-3">Notifications</label>
-                    <div class="space-y-3">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" checked class="rounded text-primary-600">
-                            <span class="text-sm text-clinical-muted">High risk patient alerts</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" checked class="rounded text-primary-600">
-                            <span class="text-sm text-clinical-muted">Model performance updates</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" class="rounded text-primary-600">
-                            <span class="text-sm text-clinical-muted">Daily summary reports</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="p-6 border-t border-clinical-border flex justify-end space-x-3">
-                <button id="cancelSettings" class="border border-clinical-border text-clinical-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                    Cancel
-                </button>
-                <button id="saveSettings" class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">
-                    Save Changes
-                </button>
             </div>
         </div>
     </div>
@@ -847,393 +588,219 @@
 
     <script>
         // Clinical Dashboard Application
-        class ClinicalDashboardApp {
+        class ClinicalDashboard {
             constructor() {
-                this.state = {
-                    patients: [],
-                    selectedPatient: null,
-                    currentModel: 'ensemble',
-                    currentTab: 'overview',
-                    filters: {
-                        riskLevel: 'all',
-                        search: ''
+                // Pre-loaded patients data
+                this.patients = [
+                    {
+                        id: "PT-0001",
+                        name: "Sarah Johnson",
+                        age: 65,
+                        gender: "F",
+                        condition: "type2_diabetes",
+                        riskScore: 82,
+                        confidence: 90,
+                        admissionDate: "2025-06-15",
+                        lastUpdate: "2025-09-10T00:10:00",
+                        riskCategory: "high",
+                        monitoringParameters: ["vitals", "labs", "medications"],
+                        notes: "Patient with well-controlled diabetes, recent HbA1c trending upward.",
+                        attendingPhysician: "Dr. Sarah Chen"
                     },
-                    settings: {
-                        highRiskThreshold: 80,
-                        mediumRiskThreshold: 40,
-                        refreshInterval: 15,
-                        confidenceThreshold: 0.8
+                    {
+                        id: "PT-0002",
+                        name: "Michael Chen",
+                        age: 72,
+                        gender: "M",
+                        condition: "heart_failure",
+                        riskScore: 88,
+                        confidence: 95,
+                        admissionDate: "2025-05-22",
+                        lastUpdate: "2025-09-10T00:15:00",
+                        riskCategory: "high",
+                        monitoringParameters: ["vitals", "labs", "medications", "lifestyle"],
+                        notes: "Heart failure patient with recent weight gain and increased dyspnea.",
+                        attendingPhysician: "Dr. Robert Martinez"
+                    },
+                    {
+                        id: "PT-0003",
+                        name: "Emily Rodriguez",
+                        age: 58,
+                        gender: "F",
+                        condition: "copd",
+                        riskScore: 70,
+                        confidence: 85,
+                        admissionDate: "2025-07-01",
+                        lastUpdate: "2025-09-10T00:12:00",
+                        riskCategory: "medium",
+                        monitoringParameters: ["vitals", "labs"],
+                        notes: "COPD patient with baseline oxygen therapy.",
+                        attendingPhysician: "Dr. Emily Johnson"
+                    },
+                    {
+                        id: "PT-0004",
+                        name: "David Thompson",
+                        age: 45,
+                        gender: "M",
+                        condition: "hypertension",
+                        riskScore: 55,
+                        confidence: 80,
+                        admissionDate: "2025-08-10",
+                        lastUpdate: "2025-09-10T00:18:00",
+                        riskCategory: "medium",
+                        monitoringParameters: ["vitals", "medications"],
+                        notes: "Hypertension controlled with medications.",
+                        attendingPhysician: "Dr. Amit Patel"
+                    },
+                    {
+                        id: "PT-0005",
+                        name: "Lisa Wang",
+                        age: 62,
+                        gender: "F",
+                        condition: "ckd",
+                        riskScore: 73,
+                        confidence: 88,
+                        admissionDate: "2025-05-28",
+                        lastUpdate: "2025-09-10T00:20:00",
+                        riskCategory: "medium",
+                        monitoringParameters: ["labs", "medications"],
+                        notes: "Chronic kidney disease stage 3.",
+                        attendingPhysician: "Dr. Lisa Wilson"
+                    },
+                    {
+                        id: "PT-0006",
+                        name: "Amanda Davis",
+                        age: 50,
+                        gender: "F",
+                        condition: "obesity",
+                        riskScore: 40,
+                        confidence: 75,
+                        admissionDate: "2025-06-17",
+                        lastUpdate: "2025-09-10T00:22:00",
+                        riskCategory: "low",
+                        monitoringParameters: ["lifestyle"],
+                        notes: "Obesity with lifestyle interventions advised.",
+                        attendingPhysician: "Dr. Michelle Lee"
+                    },
+                    {
+                        id: "PT-0007",
+                        name: "Joshua Wright",
+                        age: 68,
+                        gender: "M",
+                        condition: "stroke_history",
+                        riskScore: 80,
+                        confidence: 90,
+                        admissionDate: "2025-07-31",
+                        lastUpdate: "2025-09-10T00:25:00",
+                        riskCategory: "high",
+                        monitoringParameters: ["vitals", "labs", "medications"],
+                        notes: "Post-stroke patient with moderate disability.",
+                        attendingPhysician: "Dr. Nicole Anderson"
                     }
-                };
+                ];
                 
+                this.selectedPatient = null;
+                this.currentTab = 'overview';
+                this.currentFilter = 'all';
+                this.searchTerm = '';
                 this.charts = {};
-                this.updateInterval = null;
-                this.lastUpdateTime = new Date();
                 
                 this.init();
             }
             
-            async init() {
-                try {
-                    await this.generateRealisticPatientData();
-                    this.setupEventListeners();
-                    this.initializeCharts();
-                    this.renderDashboard();
-                    this.startAutoRefresh();
-                    this.showNotification('System initialized successfully', 'success');
-                } catch (error) {
-                    console.error('Initialization failed:', error);
-                    this.showNotification('System initialization failed', 'error');
-                }
+            init() {
+                this.setupEventListeners();
+                this.generatePatientData();
+                this.initializeCharts();
+                this.renderDashboard();
+                this.updateLastUpdateTime();
+                this.generateNewPatientId();
             }
             
-            // Data Generation & Management
-            async generateRealisticPatientData() {
-                const conditions = [
-                    { name: 'type2_diabetes', risk_modifier: 0.3, prevalence: 0.25 },
-                    { name: 'heart_failure', risk_modifier: 0.5, prevalence: 0.15 },
-                    { name: 'copd', risk_modifier: 0.4, prevalence: 0.12 },
-                    { name: 'hypertension', risk_modifier: 0.2, prevalence: 0.3 },
-                    { name: 'ckd', risk_modifier: 0.45, prevalence: 0.1 },
-                    { name: 'obesity', risk_modifier: 0.25, prevalence: 0.08 }
-                ];
-                
-                const names = [
-                    'Sarah Johnson', 'Michael Chen', 'Emily Rodriguez', 'David Thompson',
-                    'Lisa Wang', 'Robert Martinez', 'Jennifer Brown', 'Christopher Lee',
-                    'Amanda Davis', 'Kevin Wilson', 'Rachel Green', 'Daniel Kim',
-                    'Maria Garcia', 'James Anderson', 'Nicole Taylor', 'Andrew Miller',
-                    'Stephanie Wilson', 'Ryan Clark', 'Michelle White', 'Brandon Lewis',
-                    'Jessica Hall', 'Matthew Young', 'Ashley King', 'Joshua Wright',
-                    'Samantha Lopez', 'Justin Hill', 'Rebecca Scott', 'Alexander Adams',
-                    'Victoria Nelson', 'Gabriel Carter', 'Olivia Mitchell', 'Nathan Perez',
-                    'Megan Roberts', 'Tyler Turner', 'Brittany Phillips', 'Austin Campbell',
-                    'Hannah Parker', 'Sean Evans', 'Kayla Edwards', 'Derek Collins',
-                    'Morgan Stewart', 'Corey Sanchez', 'Danielle Morris', 'Trevor Rogers',
-                    'Alexis Reed', 'Jordan Cook', 'Brooke Bailey', 'Lucas Rivera',
-                    'Courtney Cooper', 'Caleb Richardson', 'Kimberly Cox', 'Marcus Ward'
-                ];
-                
-                this.state.patients = names.map((name, index) => {
-                    const condition = this.selectConditionByPrevalence(conditions);
-                    const age = Math.floor(Math.random() * 40) + 40;
-                    const baseRisk = this.calculateBaseRisk(age, condition);
-                    const riskScore = Math.max(0, Math.min(100, baseRisk + (Math.random() - 0.5) * 20));
-                    const confidence = Math.floor(Math.random() * 20) + 75;
-                    
-                    // Generate realistic vital signs and lab data
-                    const vitalsHistory = this.generateVitalsHistory(condition, riskScore);
-                    const labHistory = this.generateLabHistory(condition, riskScore);
-                    const riskTimeline = this.generateRiskTimeline(riskScore);
-                    const shapValues = this.generateShapValues(condition, age, riskScore);
-                    
-                    return {
-                        id: `PT-${String(index + 1).padStart(4, '0')}`,
-                        name,
-                        age,
-                        gender: Math.random() > 0.5 ? 'F' : 'M',
-                        condition: condition.name,
-                        riskScore: Math.round(riskScore),
-                        confidence: Math.round(confidence),
-                        admissionDate: this.generateRandomDate(30),
-                        lastUpdate: new Date(),
-                        vitalsHistory,
-                        labHistory,
-                        riskTimeline,
-                        shapValues,
-                        interventions: this.generateInterventions(riskScore),
-                        medications: this.generateMedications(condition.name),
-                        comorbidities: this.generateComorbidities(condition.name),
-                        attendingPhysician: this.getRandomPhysician(),
-                        notes: this.generateClinicalNotes(condition.name, riskScore)
-                    };
+            generatePatientData() {
+                // Generate additional data for each patient
+                this.patients.forEach(patient => {
+                    patient.vitalsHistory = this.generateVitalsHistory();
+                    patient.riskTimeline = this.generateRiskTimeline(patient.riskScore);
+                    patient.shapValues = this.generateShapValues(patient.condition, patient.riskScore);
                 });
             }
             
-            selectConditionByPrevalence(conditions) {
-                const random = Math.random();
-                let cumulativeProbability = 0;
-                
-                for (const condition of conditions) {
-                    cumulativeProbability += condition.prevalence;
-                    if (random <= cumulativeProbability) {
-                        return condition;
-                    }
-                }
-                return conditions[0];
-            }
-            
-            calculateBaseRisk(age, condition) {
-                let baseRisk = 20;
-                
-                // Age factor
-                if (age > 70) baseRisk += 30;
-                else if (age > 60) baseRisk += 20;
-                else if (age > 50) baseRisk += 10;
-                
-                // Condition factor
-                baseRisk += condition.risk_modifier * 100;
-                
-                return baseRisk;
-            }
-            
-            generateVitalsHistory(condition, riskScore) {
-                const days = 30;
+            generateVitalsHistory() {
                 const history = [];
-                
-                for (let i = 0; i < days; i++) {
+                for (let i = 0; i < 30; i++) {
                     const date = new Date();
-                    date.setDate(date.getDate() - (days - i));
-                    
-                    // Base values influenced by condition and risk
-                    let heartRate = 70 + (riskScore / 100) * 30 + (Math.random() - 0.5) * 10;
-                    let systolic = 120 + (riskScore / 100) * 40 + (Math.random() - 0.5) * 15;
-                    let diastolic = 80 + (riskScore / 100) * 20 + (Math.random() - 0.5) * 10;
-                    let temperature = 98.6 + (Math.random() - 0.5) * 2;
-                    let oxygenSat = 98 - (riskScore / 100) * 8 + (Math.random() - 0.5) * 3;
-                    let respiratoryRate = 16 + (riskScore / 100) * 8 + (Math.random() - 0.5) * 4;
-                    
-                    // Condition-specific adjustments
-                    switch (condition.name) {
-                        case 'heart_failure':
-                            heartRate += 10;
-                            systolic -= 10;
-                            oxygenSat -= 2;
-                            break;
-                        case 'copd':
-                            oxygenSat -= 5;
-                            respiratoryRate += 6;
-                            break;
-                        case 'hypertension':
-                            systolic += 20;
-                            diastolic += 10;
-                            break;
-                    }
+                    date.setDate(date.getDate() - (30 - i));
                     
                     history.push({
                         date: date.toISOString().split('T')[0],
-                        heartRate: Math.round(Math.max(50, Math.min(150, heartRate))),
+                        heartRate: Math.floor(Math.random() * 40) + 60,
                         bloodPressure: {
-                            systolic: Math.round(Math.max(90, Math.min(200, systolic))),
-                            diastolic: Math.round(Math.max(60, Math.min(120, diastolic)))
+                            systolic: Math.floor(Math.random() * 40) + 120,
+                            diastolic: Math.floor(Math.random() * 20) + 70
                         },
-                        temperature: Math.round((Math.max(96, Math.min(102, temperature)) * 10)) / 10,
-                        oxygenSaturation: Math.round(Math.max(85, Math.min(100, oxygenSat))),
-                        respiratoryRate: Math.round(Math.max(10, Math.min(30, respiratoryRate)))
+                        temperature: (Math.random() * 2 + 97).toFixed(1),
+                        oxygenSat: Math.floor(Math.random() * 5) + 95
                     });
                 }
-                
                 return history;
-            }
-            
-            generateLabHistory(condition, riskScore) {
-                const labs = [];
-                const dates = [-7, -14, -30]; // Lab dates
-                
-                dates.forEach(daysAgo => {
-                    const date = new Date();
-                    date.setDate(date.getDate() + daysAgo);
-                    
-                    let glucose = 100 + (riskScore / 100) * 100 + (Math.random() - 0.5) * 30;
-                    let creatinine = 1.0 + (riskScore / 100) * 2 + (Math.random() - 0.5) * 0.5;
-                    let hemoglobin = 14 - (riskScore / 100) * 4 + (Math.random() - 0.5) * 2;
-                    let hba1c = 6 + (riskScore / 100) * 4 + (Math.random() - 0.5) * 1;
-                    
-                    labs.push({
-                        date: date.toISOString().split('T')[0],
-                        glucose: Math.round(Math.max(70, Math.min(400, glucose))),
-                        creatinine: Math.round((Math.max(0.5, Math.min(5, creatinine)) * 100)) / 100,
-                        hemoglobin: Math.round((Math.max(8, Math.min(18, hemoglobin)) * 10)) / 10,
-                        hba1c: Math.round((Math.max(4, Math.min(14, hba1c)) * 10)) / 10,
-                        bun: Math.round(10 + (riskScore / 100) * 50 + (Math.random() - 0.5) * 10),
-                        sodium: Math.round(140 + (Math.random() - 0.5) * 10),
-                        potassium: Math.round((4.0 + (Math.random() - 0.5) * 1) * 10) / 10
-                    });
-                });
-                
-                return labs;
             }
             
             generateRiskTimeline(currentRisk) {
                 const timeline = [];
-                const days = 90; // Future prediction
-                
-                for (let i = 0; i <= days; i++) {
+                for (let i = 0; i < 90; i++) {
                     const date = new Date();
                     date.setDate(date.getDate() + i);
                     
-                    // Risk progression with some randomness
-                    let risk = currentRisk;
-                    if (i > 0) {
-                        // Slight trend based on current risk level
-                        const trendFactor = currentRisk > 70 ? 0.2 : currentRisk > 40 ? 0.1 : -0.1;
-                        risk = currentRisk + (i * trendFactor) + (Math.random() - 0.5) * 10;
-                    }
+                    let risk = currentRisk + (i * (currentRisk > 70 ? 0.1 : -0.05)) + (Math.random() - 0.5) * 10;
+                    risk = Math.max(0, Math.min(100, risk));
                     
                     timeline.push({
                         date: date.toISOString().split('T')[0],
-                        risk: Math.max(0, Math.min(100, Math.round(risk))),
-                        confidence: Math.round(85 + (Math.random() - 0.5) * 20)
+                        risk: Math.round(risk)
                     });
                 }
-                
                 return timeline;
             }
             
-            generateShapValues(condition, age, riskScore) {
+            generateShapValues(condition, riskScore) {
                 const features = [
-                    { name: 'Age', baseValue: age / 100 },
-                    { name: 'Lactate Levels', baseValue: 0.3 },
-                    { name: 'Respiratory Rate', baseValue: 0.25 },
-                    { name: 'Blood Pressure', baseValue: 0.2 },
-                    { name: 'Heart Rate Variability', baseValue: 0.18 },
-                    { name: 'Oxygen Saturation', baseValue: -0.15 },
-                    { name: 'Temperature', baseValue: 0.1 },
-                    { name: 'Medication Adherence', baseValue: -0.2 },
-                    { name: 'Previous Hospitalizations', baseValue: 0.12 },
-                    { name: 'Comorbidity Count', baseValue: 0.08 }
+                    'Lactate Levels',
+                    'Respiratory Rate', 
+                    'Age Factor',
+                    'Blood Pressure',
+                    'Heart Rate Variability',
+                    'Oxygen Saturation',
+                    'Temperature',
+                    'Medication Adherence'
                 ];
                 
                 return features.map(feature => {
-                    let shapValue = feature.baseValue * (riskScore / 100);
-                    
-                    // Add some realistic variation
-                    shapValue += (Math.random() - 0.5) * 0.1;
-                    
-                    // Condition-specific adjustments
-                    if (feature.name === 'Lactate Levels' && condition.name === 'heart_failure') {
-                        shapValue += 0.1;
-                    }
-                    if (feature.name === 'Oxygen Saturation' && condition.name === 'copd') {
-                        shapValue -= 0.15;
-                    }
-                    
+                    const value = (Math.random() - 0.5) * (riskScore / 100);
                     return {
-                        feature: feature.name,
-                        value: Math.round(shapValue * 1000) / 1000,
-                        impact: shapValue > 0 ? 'positive' : 'negative',
-                        description: this.getFeatureDescription(feature.name, shapValue)
+                        feature,
+                        value: value.toFixed(3),
+                        impact: value > 0 ? 'positive' : 'negative',
+                        description: this.getFeatureDescription(feature, value)
                     };
                 }).sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
             }
             
-            getFeatureDescription(featureName, shapValue) {
+            getFeatureDescription(feature, value) {
                 const descriptions = {
-                    'Age': shapValue > 0 ? 'Advanced age increases risk' : 'Younger age is protective',
-                    'Lactate Levels': shapValue > 0 ? 'Elevated lactate indicates metabolic stress' : 'Normal lactate levels',
-                    'Respiratory Rate': shapValue > 0 ? 'Increased respiratory rate suggests distress' : 'Stable breathing pattern',
-                    'Blood Pressure': shapValue > 0 ? 'Blood pressure elevation' : 'Well-controlled blood pressure',
-                    'Heart Rate Variability': shapValue > 0 ? 'Abnormal heart rate patterns' : 'Normal cardiac rhythm',
-                    'Oxygen Saturation': shapValue < 0 ? 'Good oxygen saturation' : 'Concerning oxygen levels',
-                    'Temperature': shapValue > 0 ? 'Temperature abnormalities' : 'Normal temperature',
-                    'Medication Adherence': shapValue < 0 ? 'Good medication compliance' : 'Poor adherence patterns',
-                    'Previous Hospitalizations': shapValue > 0 ? 'History of hospitalizations' : 'No recent hospitalizations',
-                    'Comorbidity Count': shapValue > 0 ? 'Multiple comorbidities present' : 'Limited comorbidities'
+                    'Lactate Levels': value > 0 ? 'Elevated lactate indicates metabolic stress' : 'Normal lactate levels',
+                    'Respiratory Rate': value > 0 ? 'Increased respiratory rate suggests distress' : 'Stable breathing pattern',
+                    'Age Factor': value > 0 ? 'Advanced age increases risk' : 'Age is protective factor',
+                    'Blood Pressure': value > 0 ? 'Blood pressure elevation' : 'Well-controlled blood pressure',
+                    'Heart Rate Variability': value > 0 ? 'Abnormal heart rate patterns' : 'Normal cardiac rhythm',
+                    'Oxygen Saturation': value > 0 ? 'Concerning oxygen levels' : 'Good oxygen saturation',
+                    'Temperature': value > 0 ? 'Temperature abnormalities' : 'Normal temperature',
+                    'Medication Adherence': value > 0 ? 'Poor adherence patterns' : 'Good medication compliance'
                 };
-                
-                return descriptions[featureName] || 'Impact on patient risk';
+                return descriptions[feature] || 'Impact on patient risk';
             }
             
-            generateInterventions(riskScore) {
-                const allInterventions = [
-                    { name: 'Medication Adjustment', priority: riskScore > 70 ? 'high' : 'medium', status: 'pending' },
-                    { name: 'Cardiology Consultation', priority: riskScore > 80 ? 'high' : 'low', status: 'scheduled' },
-                    { name: 'Dietary Counseling', priority: 'medium', status: 'completed' },
-                    { name: 'Exercise Program', priority: 'low', status: 'pending' },
-                    { name: 'Home Monitoring', priority: riskScore > 60 ? 'high' : 'medium', status: 'active' },
-                    { name: 'Social Work Referral', priority: 'medium', status: 'pending' }
-                ];
-                
-                // Select interventions based on risk score
-                const numInterventions = riskScore > 70 ? 4 : riskScore > 40 ? 3 : 2;
-                return allInterventions.slice(0, numInterventions);
-            }
-            
-            generateMedications(condition) {
-                const medicationsByCondition = {
-                    'type2_diabetes': ['Metformin 1000mg BID', 'Lisinopril 10mg daily', 'Atorvastatin 20mg daily'],
-                    'heart_failure': ['Lisinopril 20mg daily', 'Metoprolol 50mg BID', 'Furosemide 40mg daily'],
-                    'copd': ['Albuterol inhaler PRN', 'Tiotropium daily', 'Prednisone 10mg daily'],
-                    'hypertension': ['Amlodipine 5mg daily', 'Hydrochlorothiazide 25mg daily'],
-                    'ckd': ['Lisinopril 10mg daily', 'Sodium bicarbonate 650mg TID'],
-                    'obesity': ['Orlistat 120mg TID', 'Metformin 500mg BID']
-                };
-                
-                return medicationsByCondition[condition] || ['Multivitamin daily'];
-            }
-            
-            generateComorbidities(primaryCondition) {
-                const comorbidityPool = [
-                    'Hypertension', 'Type 2 Diabetes', 'Hyperlipidemia', 
-                    'Chronic Kidney Disease', 'Obesity', 'Sleep Apnea',
-                    'Depression', 'Anxiety', 'Osteoarthritis'
-                ];
-                
-                const numComorbidities = Math.floor(Math.random() * 4) + 1;
-                const selected = [];
-                const available = comorbidityPool.filter(c => 
-                    !c.toLowerCase().includes(primaryCondition.replace('_', ' '))
-                );
-                
-                for (let i = 0; i < numComorbidities && i < available.length; i++) {
-                    const index = Math.floor(Math.random() * available.length);
-                    selected.push(available.splice(index, 1)[0]);
-                }
-                
-                return selected;
-            }
-            
-            getRandomPhysician() {
-                const physicians = [
-                    'Dr. Sarah Chen',
-                    'Dr. Robert Martinez', 
-                    'Dr. Emily Johnson',
-                    'Dr. Amit Patel',
-                    'Dr. Lisa Wang',
-                    'Dr. Michael Thompson'
-                ];
-                return physicians[Math.floor(Math.random() * physicians.length)];
-            }
-            
-            generateClinicalNotes(condition, riskScore) {
-                const noteTemplates = {
-                    'type2_diabetes': 'Patient with well-controlled diabetes, recent HbA1c trending',
-                    'heart_failure': 'Heart failure patient with current NYHA class monitoring',
-                    'copd': 'COPD patient with baseline dyspnea and oxygen requirements',
-                    'hypertension': 'Hypertensive patient with good medication compliance',
-                    'ckd': 'Chronic kidney disease with stable creatinine levels',
-                    'obesity': 'Obese patient enrolled in weight management program'
-                };
-                
-                let baseNote = noteTemplates[condition] || 'Patient under active monitoring';
-                
-                if (riskScore > 75) {
-                    baseNote += '. High risk for deterioration - requires close monitoring.';
-                } else if (riskScore > 50) {
-                    baseNote += '. Moderate risk - continue current management plan.';
-                } else {
-                    baseNote += '. Low risk - routine follow-up scheduled.';
-                }
-                
-                return baseNote;
-            }
-            
-            generateRandomDate(daysAgo) {
-                const date = new Date();
-                date.setDate(date.getDate() - Math.floor(Math.random() * daysAgo));
-                return date.toISOString().split('T')[0];
-            }
-            
-            // Event Listeners
             setupEventListeners() {
-                // Navigation
-                document.querySelectorAll('nav a[href^="#"]').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.navigateToSection(link.getAttribute('href').substring(1));
-                    });
-                });
-                
                 // Model selector
                 document.getElementById('modelSelector').addEventListener('change', (e) => {
                     this.handleModelChange(e.target.value);
@@ -1244,24 +811,19 @@
                     this.refreshData();
                 });
                 
-                // Export button
-                document.getElementById('exportBtn').addEventListener('click', () => {
-                    this.exportData();
-                });
-                
                 // Patient search
                 document.getElementById('patientSearch').addEventListener('input', (e) => {
-                    this.state.filters.search = e.target.value;
+                    this.searchTerm = e.target.value;
                     this.renderPatientList();
                 });
                 
-                // Risk level filters
+                // Filter buttons
                 document.getElementById('filterAll').addEventListener('click', () => {
-                    this.setRiskFilter('all');
+                    this.setFilter('all');
                 });
                 
                 document.getElementById('filterHighRisk').addEventListener('click', () => {
-                    this.setRiskFilter('high');
+                    this.setFilter('high');
                 });
                 
                 // Tab buttons
@@ -1276,9 +838,6 @@
                     e.preventDefault();
                     this.handlePatientRegistration(e);
                 });
-                
-                // Auto-generate patient ID
-                document.getElementById('patientId').value = `PT-${String(this.state.patients.length + 1).padStart(4, '0')}`;
                 
                 // AI Assistant
                 document.getElementById('aiAssistantBtn').addEventListener('click', () => {
@@ -1299,84 +858,42 @@
                     }
                 });
                 
-                // Suggestion buttons in AI chat
-                document.querySelectorAll('.suggestion-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.getElementById('chatInput').value = e.target.textContent;
-                        this.sendAiMessage();
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.scrollToSection(e.target.getAttribute('href'));
                     });
-                });
-                
-                // Settings modal
-                document.getElementById('settingsBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.add('active');
-                });
-                
-                document.getElementById('closeSettingsModal').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.remove('active');
-                });
-                
-                document.getElementById('saveSettings').addEventListener('click', () => {
-                    this.saveSettings();
-                });
-                
-                document.getElementById('cancelSettings').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.remove('active');
-                });
-                
-                // Alert dismissal
-                document.getElementById('dismissAlert').addEventListener('click', () => {
-                    document.getElementById('alertBanner').classList.add('hidden');
-                });
-                
-                // Modal click outside to close
-                document.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('modal')) {
-                        e.target.classList.remove('active');
-                    }
                 });
             }
             
-            // Core Application Methods
-            async renderDashboard() {
+            renderDashboard() {
                 this.updateStatistics();
                 this.renderPatientList();
-                this.updateLastUpdateTime();
-                this.checkHighRiskAlerts();
                 
-                if (this.state.selectedPatient) {
-                    this.renderPatientDetails();
-                } else if (this.state.patients.length > 0) {
-                    this.selectPatient(this.state.patients[0].id);
+                if (this.patients.length > 0 && !this.selectedPatient) {
+                    this.selectPatient(this.patients[0].id);
                 }
             }
             
             updateStatistics() {
-                const patients = this.getFilteredPatients();
-                const highRisk = patients.filter(p => p.riskScore > this.state.settings.highRiskThreshold);
-                const mediumRisk = patients.filter(p => p.riskScore >= this.state.settings.mediumRiskThreshold && p.riskScore <= this.state.settings.highRiskThreshold);
-                const lowRisk = patients.filter(p => p.riskScore < this.state.settings.mediumRiskThreshold);
+                const filteredPatients = this.getFilteredPatients();
+                const highRisk = filteredPatients.filter(p => p.riskScore > 75);
+                const mediumRisk = filteredPatients.filter(p => p.riskScore >= 40 && p.riskScore <= 75);
+                const lowRisk = filteredPatients.filter(p => p.riskScore < 40);
                 
                 document.getElementById('highRiskCount').textContent = highRisk.length;
                 document.getElementById('mediumRiskCount').textContent = mediumRisk.length;
                 document.getElementById('lowRiskCount').textContent = lowRisk.length;
-                document.getElementById('totalPatients').textContent = patients.length;
+                document.getElementById('totalPatients').textContent = filteredPatients.length;
                 
-                // Calculate changes (simulated)
-                document.getElementById('highRiskChange').textContent = `+${Math.floor(Math.random() * 3)}`;
-                document.getElementById('mediumRiskChange').textContent = `+${Math.floor(Math.random() * 5)}`;
-                document.getElementById('lowRiskChange').textContent = `+${Math.floor(Math.random() * 7)}`;
+                // Mock changes
+                document.getElementById('highRiskChange').textContent = '+1';
+                document.getElementById('mediumRiskChange').textContent = '+2';
+                document.getElementById('lowRiskChange').textContent = '+3';
                 
-                // Model accuracy based on current model
-                const accuracyMap = {
-                    'ensemble': 0.82,
-                    'xgboost': 0.79,
-                    'lstm': 0.76,
-                    'random_forest': 0.74,
-                    'adaboost': 0.71
-                };
-                
-                document.getElementById('modelAccuracy').textContent = accuracyMap[this.state.currentModel].toFixed(2);
+                // Model accuracy
+                document.getElementById('modelAccuracy').textContent = '0.82';
             }
             
             renderPatientList() {
@@ -1395,7 +912,7 @@
                 
                 container.innerHTML = patients.map(patient => {
                     const riskClass = this.getRiskClass(patient.riskScore);
-                    const isSelected = this.state.selectedPatient?.id === patient.id;
+                    const isSelected = this.selectedPatient?.id === patient.id;
                     
                     return `
                         <div class="patient-item risk-indicator ${riskClass.cssClass} p-4 border-b border-clinical-border cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''}"
@@ -1413,10 +930,7 @@
                                         <div>
                                             <span>${this.formatCondition(patient.condition)} • Age ${patient.age} • ${patient.gender}</span>
                                         </div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="status-indicator ${this.getPatientStatus(patient.riskScore)}"></span>
-                                            <span class="text-xs">${this.formatDate(patient.lastUpdate)}</span>
-                                        </div>
+                                        <div class="text-xs">${this.formatDate(patient.lastUpdate)}</div>
                                     </div>
                                 </div>
                             </div>
@@ -1434,16 +948,16 @@
             }
             
             selectPatient(patientId) {
-                this.state.selectedPatient = this.state.patients.find(p => p.id === patientId);
-                this.renderPatientList(); // Refresh to show selection
+                this.selectedPatient = this.patients.find(p => p.id === patientId);
+                this.renderPatientList();
                 this.renderPatientDetails();
-                this.updatePatientCharts();
+                this.renderTabContent();
             }
             
             renderPatientDetails() {
-                if (!this.state.selectedPatient) return;
+                if (!this.selectedPatient) return;
                 
-                const patient = this.state.selectedPatient;
+                const patient = this.selectedPatient;
                 const riskClass = this.getRiskClass(patient.riskScore);
                 
                 document.getElementById('selectedPatientInfo').innerHTML = `
@@ -1460,15 +974,23 @@
                         </div>
                     </div>
                 `;
-                
-                this.renderTabContent();
             }
             
             renderTabContent() {
-                const patient = this.state.selectedPatient;
                 const content = document.getElementById('tabContent');
+                const patient = this.selectedPatient;
                 
-                switch (this.state.currentTab) {
+                if (!patient) {
+                    content.innerHTML = `
+                        <div class="text-center text-clinical-muted py-12">
+                            <i class="fas fa-user-circle text-4xl mb-4"></i>
+                            <p>Select a patient from the list to view detailed analysis</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                switch (this.currentTab) {
                     case 'overview':
                         content.innerHTML = this.renderOverviewTab(patient);
                         break;
@@ -1479,60 +1001,41 @@
                     case 'factors':
                         content.innerHTML = this.renderFactorsTab(patient);
                         break;
-                    case 'vitals':
-                        content.innerHTML = this.renderVitalsTab(patient);
-                        setTimeout(() => this.renderVitalsChart(), 100);
-                        break;
-                    case 'interventions':
-                        content.innerHTML = this.renderInterventionsTab(patient);
-                        break;
                 }
             }
             
             renderOverviewTab(patient) {
                 const latestVitals = patient.vitalsHistory[patient.vitalsHistory.length - 1];
-                const latestLabs = patient.labHistory[0]; // Most recent
-                const riskTrend = this.calculateRiskTrend(patient);
                 
                 return `
                     <div class="space-y-6">
-                        <!-- Key Metrics -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <div class="text-sm text-clinical-muted mb-1">Current Risk</div>
                                 <div class="text-2xl font-bold text-primary-600">${patient.riskScore}%</div>
                                 <div class="text-xs text-clinical-muted">Confidence: ${patient.confidence}%</div>
                             </div>
                             <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="text-sm text-clinical-muted mb-1">Risk Trend</div>
-                                <div class="text-lg font-semibold ${riskTrend.direction === 'increasing' ? 'text-red-600' : riskTrend.direction === 'decreasing' ? 'text-green-600' : 'text-gray-600'}">
-                                    ${riskTrend.direction}
-                                </div>
-                                <div class="text-xs text-clinical-muted">${riskTrend.change}% change</div>
+                                <div class="text-sm text-clinical-muted mb-1">Condition</div>
+                                <div class="text-lg font-semibold text-clinical-text">${this.formatCondition(patient.condition)}</div>
                             </div>
                             <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="text-sm text-clinical-muted mb-1">Next Review</div>
-                                <div class="text-lg font-semibold text-clinical-text">${this.getNextReviewDate(patient.riskScore)}</div>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="text-sm text-clinical-muted mb-1">Days Monitored</div>
-                                <div class="text-lg font-semibold text-clinical-text">${this.getDaysMonitored(patient)}</div>
+                                <div class="text-sm text-clinical-muted mb-1">Attending</div>
+                                <div class="text-lg font-semibold text-clinical-text">${patient.attendingPhysician}</div>
                             </div>
                         </div>
                         
-                        <!-- Clinical Summary -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <h5 class="font-medium text-clinical-text mb-2 flex items-center">
                                 <i class="fas fa-stethoscope text-blue-600 mr-2"></i>
-                                Clinical Summary
+                                Clinical Notes
                             </h5>
-                            <p class="text-sm text-blue-800">${this.getClinicalRecommendation(patient)}</p>
+                            <p class="text-sm text-blue-800">${patient.notes}</p>
                         </div>
                         
-                        <!-- Latest Vitals -->
                         <div>
                             <h5 class="font-medium text-clinical-text mb-3">Latest Vital Signs</h5>
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <div class="text-xs text-clinical-muted">Heart Rate</div>
                                     <div class="text-lg font-semibold">${latestVitals.heartRate}</div>
@@ -1550,46 +1053,12 @@
                                 </div>
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <div class="text-xs text-clinical-muted">Oxygen Sat</div>
-                                    <div class="text-lg font-semibold">${latestVitals.oxygenSaturation}%</div>
+                                    <div class="text-lg font-semibold">${latestVitals.oxygenSat}%</div>
                                     <div class="text-xs text-clinical-muted">SpO2</div>
                                 </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-xs text-clinical-muted">Resp Rate</div>
-                                    <div class="text-lg font-semibold">${latestVitals.respiratoryRate}</div>
-                                    <div class="text-xs text-clinical-muted">per min</div>
-                                </div>
                             </div>
                         </div>
                         
-                        <!-- Latest Labs -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">Recent Laboratory Results</h5>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                    <div>
-                                        <span class="text-clinical-muted">Glucose:</span>
-                                        <span class="font-medium ml-1">${latestLabs.glucose} mg/dL</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-clinical-muted">Creatinine:</span>
-                                        <span class="font-medium ml-1">${latestLabs.creatinine} mg/dL</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-clinical-muted">Hemoglobin:</span>
-                                        <span class="font-medium ml-1">${latestLabs.hemoglobin} g/dL</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-clinical-muted">HbA1c:</span>
-                                        <span class="font-medium ml-1">${latestLabs.hba1c}%</span>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-clinical-muted mt-2">
-                                    Last drawn: ${this.formatDate(latestLabs.date)}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Top Risk Factors -->
                         <div>
                             <h5 class="font-medium text-clinical-text mb-3">Top Risk Factors</h5>
                             <div class="space-y-2">
@@ -1622,25 +1091,6 @@
                                 <canvas id="patientTimelineChart"></canvas>
                             </div>
                         </div>
-                        
-                        <!-- Risk Milestones -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">Risk Milestones</h5>
-                            <div class="space-y-3">
-                                ${this.generateRiskMilestones(patient).map(milestone => `
-                                    <div class="flex items-center space-x-3 p-3 border border-clinical-border rounded-lg">
-                                        <div class="timeline-point ${milestone.riskClass}" style="background-color: ${milestone.color}"></div>
-                                        <div class="flex-1">
-                                            <div class="font-medium text-clinical-text">${milestone.date}</div>
-                                            <div class="text-sm text-clinical-muted">${milestone.description}</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-lg font-semibold" style="color: ${milestone.color}">${milestone.risk}%</div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
                     </div>
                 `;
             }
@@ -1654,7 +1104,7 @@
                         </div>
                         
                         <div class="space-y-4">
-                            ${patient.shapValues.map((factor, index) => `
+                            ${patient.shapValues.map(factor => `
                                 <div class="border border-clinical-border rounded-lg p-4">
                                     <div class="flex items-center justify-between mb-3">
                                         <h6 class="font-medium text-clinical-text">${factor.feature}</h6>
@@ -1668,21 +1118,14 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- SHAP Bar -->
                                     <div class="mb-3">
-                                        <div class="shap-bar ${factor.impact === 'positive' ? 'shap-positive' : 'shap-negative'}" 
-                                             style="width: ${Math.min(100, Math.abs(factor.value) * 200)}%;">
-                                            <div class="h-full bg-gradient-to-r ${factor.impact === 'positive' ? 'from-red-400 to-red-600' : 'from-blue-400 to-blue-600'}" 
-                                                 style="width: 100%; opacity: ${Math.min(1, Math.abs(factor.value) * 5)};"></div>
+                                        <div class="h-6 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full ${factor.impact === 'positive' ? 'bg-red-500' : 'bg-green-500'}" 
+                                                 style="width: ${Math.min(100, Math.abs(factor.value) * 200)}%; opacity: 0.7;"></div>
                                         </div>
                                     </div>
                                     
                                     <p class="text-sm text-clinical-muted">${factor.description}</p>
-                                    
-                                    <!-- Clinical Context -->
-                                    <div class="mt-3 p-3 bg-gray-50 rounded text-xs text-clinical-muted">
-                                        <strong>Clinical Context:</strong> ${this.getClinicalContext(factor.feature, factor.value, patient)}
-                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1690,316 +1133,305 @@
                 `;
             }
             
-            renderVitalsTab(patient) {
-                return `
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <h5 class="font-medium text-clinical-text mb-3">Vital Signs Trends (30 Days)</h5>
-                                <div class="chart-container">
-                                    <canvas id="vitalsChart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h5 class="font-medium text-clinical-text mb-3">Vital Signs Summary</h5>
-                                <div class="space-y-4">
-                                    ${this.generateVitalsSummary(patient).map(vital => `
-                                        <div class="flex items-center justify-between p-3 border border-clinical-border rounded-lg">
-                                            <div>
-                                                <div class="font-medium text-clinical-text">${vital.name}</div>
-                                                <div class="text-sm text-clinical-muted">${vital.range}</div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-lg font-semibold ${vital.status === 'normal' ? 'text-green-600' : vital.status === 'warning' ? 'text-yellow-600' : 'text-red-600'}">
-                                                    ${vital.current}
-                                                </div>
-                                                <div class="text-xs ${vital.trend === 'stable' ? 'text-gray-500' : vital.trend === 'improving' ? 'text-green-600' : 'text-red-600'}">
-                                                    ${vital.trend}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
+            switchTab(tabName) {
+                this.currentTab = tabName;
+                
+                // Update tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.dataset.tab === tabName) {
+                        btn.classList.remove('border-transparent', 'text-clinical-muted');
+                        btn.classList.add('border-primary-600', 'text-primary-600', 'tab-active');
+                    } else {
+                        btn.classList.remove('border-primary-600', 'text-primary-600', 'tab-active');
+                        btn.classList.add('border-transparent', 'text-clinical-muted');
+                    }
+                });
+                
+                this.renderTabContent();
+            }
+            
+            setFilter(filter) {
+                this.currentFilter = filter;
+                
+                // Update filter buttons
+                document.getElementById('filterAll').classList.remove('bg-primary-600', 'text-white');
+                document.getElementById('filterAll').classList.add('border', 'border-gray-300', 'text-gray-700');
+                
+                document.getElementById('filterHighRisk').classList.remove('bg-primary-600', 'text-white');
+                document.getElementById('filterHighRisk').classList.add('border', 'border-red-200', 'text-red-700');
+                
+                if (filter === 'all') {
+                    document.getElementById('filterAll').classList.add('bg-primary-600', 'text-white');
+                    document.getElementById('filterAll').classList.remove('border', 'border-gray-300', 'text-gray-700');
+                } else if (filter === 'high') {
+                    document.getElementById('filterHighRisk').classList.add('bg-primary-600', 'text-white');
+                    document.getElementById('filterHighRisk').classList.remove('border', 'border-red-200', 'text-red-700');
+                }
+                
+                this.renderPatientList();
+            }
+            
+            getFilteredPatients() {
+                let filtered = [...this.patients];
+                
+                // Filter by risk level
+                if (this.currentFilter === 'high') {
+                    filtered = filtered.filter(p => p.riskScore > 75);
+                }
+                
+                // Filter by search term
+                if (this.searchTerm) {
+                    const search = this.searchTerm.toLowerCase();
+                    filtered = filtered.filter(p => 
+                        p.name.toLowerCase().includes(search) ||
+                        p.id.toLowerCase().includes(search) ||
+                        this.formatCondition(p.condition).toLowerCase().includes(search)
+                    );
+                }
+                
+                return filtered.sort((a, b) => b.riskScore - a.riskScore);
+            }
+            
+            getRiskClass(riskScore) {
+                if (riskScore > 75) {
+                    return { label: 'High Risk', color: 'text-red-600', cssClass: 'risk-high' };
+                } else if (riskScore >= 40) {
+                    return { label: 'Medium Risk', color: 'text-yellow-600', cssClass: 'risk-medium' };
+                } else {
+                    return { label: 'Low Risk', color: 'text-green-600', cssClass: 'risk-low' };
+                }
+            }
+            
+            formatCondition(condition) {
+                const conditionMap = {
+                    'type2_diabetes': 'Type 2 Diabetes',
+                    'heart_failure': 'Heart Failure',
+                    'copd': 'COPD',
+                    'hypertension': 'Hypertension',
+                    'ckd': 'Chronic Kidney Disease',
+                    'obesity': 'Obesity',
+                    'stroke_history': 'Stroke History'
+                };
+                return conditionMap[condition] || condition;
+            }
+            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            handleModelChange(model) {
+                this.showNotification(`Switched to ${model} model. Recalculating predictions...`, 'success');
+                // Simulate model change
+                setTimeout(() => {
+                    this.updateStatistics();
+                }, 2000);
+            }
+            
+            refreshData() {
+                const btn = document.getElementById('refreshBtn');
+                const icon = btn.querySelector('i');
+                
+                btn.disabled = true;
+                icon.classList.add('loading-pulse');
+                
+                setTimeout(() => {
+                    // Simulate refresh
+                    this.updateLastUpdateTime();
+                    this.updateStatistics();
+                    this.renderPatientList();
+                    
+                    btn.disabled = false;
+                    icon.classList.remove('loading-pulse');
+                    
+                    this.showNotification('Data refreshed successfully', 'success');
+                }, 2000);
+            }
+            
+            generateNewPatientId() {
+                const nextId = String(this.patients.length + 1).padStart(4, '0');
+                document.getElementById('patientId').value = `PT-${nextId}`;
+            }
+            
+            handlePatientRegistration(e) {
+                const formData = new FormData(e.target);
+                const patientData = Object.fromEntries(formData);
+                
+                // Get monitoring parameters
+                const monitoringParams = [];
+                document.querySelectorAll('input[name="monitoring"]:checked').forEach(input => {
+                    monitoringParams.push(input.value);
+                });
+                
+                // Calculate initial risk score based on condition and age
+                const riskScore = this.calculateInitialRisk(patientData);
+                
+                const newPatient = {
+                    id: patientData.patientId,
+                    name: patientData.fullName,
+                    age: parseInt(patientData.age),
+                    gender: patientData.gender || 'Not specified',
+                    condition: patientData.primaryCondition,
+                    riskScore,
+                    confidence: Math.floor(Math.random() * 20) + 75,
+                    admissionDate: new Date().toISOString().split('T')[0],
+                    lastUpdate: new Date().toISOString(),
+                    riskCategory: riskScore > 75 ? 'high' : riskScore > 40 ? 'medium' : 'low',
+                    monitoringParameters: monitoringParams,
+                    notes: patientData.medicalHistory || 'No additional notes provided.',
+                    attendingPhysician: patientData.attendingPhysician || 'Not assigned',
+                    vitalsHistory: this.generateVitalsHistory(),
+                    riskTimeline: this.generateRiskTimeline(riskScore),
+                    shapValues: this.generateShapValues(patientData.primaryCondition, riskScore)
+                };
+                
+                this.patients.push(newPatient);
+                this.renderDashboard();
+                this.generateNewPatientId();
+                
+                // Show success message
+                const messageEl = document.getElementById('registrationMessage');
+                messageEl.className = 'mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800';
+                messageEl.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                        <span>Patient ${patientData.fullName} has been successfully registered for risk monitoring.</span>
+                    </div>
+                `;
+                messageEl.classList.remove('hidden');
+                
+                // Clear form
+                e.target.reset();
+                this.generateNewPatientId();
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageEl.classList.add('hidden');
+                }, 5000);
+                
+                this.showNotification('Patient registered successfully', 'success');
+            }
+            
+            calculateInitialRisk(patientData) {
+                let baseRisk = 30;
+                
+                // Age factor
+                const age = parseInt(patientData.age);
+                if (age > 70) baseRisk += 30;
+                else if (age > 60) baseRisk += 20;
+                else if (age > 50) baseRisk += 10;
+                
+                // Condition factor
+                const conditionRisk = {
+                    'type2_diabetes': 15,
+                    'heart_failure': 25,
+                    'copd': 20,
+                    'hypertension': 10,
+                    'ckd': 20,
+                    'obesity': 10,
+                    'stroke_history': 25
+                };
+                
+                baseRisk += conditionRisk[patientData.primaryCondition] || 10;
+                
+                return Math.min(100, Math.max(0, baseRisk + Math.floor(Math.random() * 20) - 10));
+            }
+            
+            openAiAssistant() {
+                document.getElementById('aiAssistantModal').classList.add('active');
+                document.getElementById('chatInput').focus();
+            }
+            
+            closeAiAssistant() {
+                document.getElementById('aiAssistantModal').classList.remove('active');
+            }
+            
+            sendAiMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                const chatMessages = document.getElementById('chatMessages');
+                
+                // Add user message
+                chatMessages.innerHTML += `
+                    <div class="flex items-start space-x-3 justify-end">
+                        <div class="bg-primary-600 text-white rounded-lg p-3 max-w-md">
+                            <p class="text-sm">${message}</p>
                         </div>
-                        
-                        <!-- Alerts -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">Vital Signs Alerts</h5>
-                            <div class="space-y-2">
-                                ${this.generateVitalsAlerts(patient).map(alert => `
-                                    <div class="flex items-center space-x-3 p-3 border-l-4 ${alert.severity === 'high' ? 'border-red-500 bg-red-50' : alert.severity === 'medium' ? 'border-yellow-500 bg-yellow-50' : 'border-blue-500 bg-blue-50'} rounded-r-lg">
-                                        <i class="fas ${alert.severity === 'high' ? 'fa-exclamation-triangle text-red-600' : alert.severity === 'medium' ? 'fa-exclamation-circle text-yellow-600' : 'fa-info-circle text-blue-600'}"></i>
-                                        <div class="flex-1">
-                                            <div class="font-medium text-clinical-text">${alert.parameter}</div>
-                                            <div class="text-sm text-clinical-muted">${alert.message}</div>
-                                        </div>
-                                        <div class="text-xs text-clinical-muted">${alert.time}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
+                        <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-white text-sm"></i>
                         </div>
                     </div>
                 `;
+                
+                input.value = '';
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const responses = [
+                        "Based on the current patient data, I can see elevated risk factors that suggest close monitoring is needed.",
+                        "The SHAP analysis indicates that respiratory patterns are the primary concern for this patient.",
+                        "I recommend reviewing medication adherence patterns as they show significant impact on risk scores.",
+                        "The ensemble model is showing high confidence in these predictions based on the temporal data patterns."
+                    ];
+                    
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    
+                    chatMessages.innerHTML += `
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-primary-600 text-sm"></i>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 max-w-md">
+                                <p class="text-sm">${response}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 1000);
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            renderInterventionsTab(patient) {
-                return `
-                    <div class="space-y-6">
-                        <!-- Active Interventions -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">Current Interventions</h5>
-                            <div class="space-y-3">
-                                ${patient.interventions.map(intervention => `
-                                    <div class="border border-clinical-border rounded-lg p-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <h6 class="font-medium text-clinical-text">${intervention.name}</h6>
-                                            <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 rounded-full ${intervention.priority === 'high' ? 'bg-red-100 text-red-700' : intervention.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}">
-                                                    ${intervention.priority} priority
-                                                </span>
-                                                <span class="text-xs px-2 py-1 rounded-full ${intervention.status === 'active' ? 'bg-blue-100 text-blue-700' : intervention.status === 'completed' ? 'bg-green-100 text-green-700' : intervention.status === 'scheduled' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
-                                                    ${intervention.status}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <p class="text-sm text-clinical-muted mb-3">${this.getInterventionDescription(intervention.name)}</p>
-                                        <div class="flex items-center justify-between text-xs text-clinical-muted">
-                                            <span>Last updated: ${this.formatDate(new Date())}</span>
-                                            <button class="text-primary-600 hover:text-primary-700">View Details</button>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        
-                        <!-- Recommended Actions -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">AI-Recommended Actions</h5>
-                            <div class="space-y-3">
-                                ${this.generateRecommendedActions(patient).map(action => `
-                                    <div class="border border-clinical-border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <div class="flex items-center space-x-2 mb-2">
-                                                    <i class="fas ${action.icon} text-primary-600"></i>
-                                                    <h6 class="font-medium text-clinical-text">${action.title}</h6>
-                                                </div>
-                                                <p class="text-sm text-clinical-muted mb-2">${action.description}</p>
-                                                <div class="text-xs text-clinical-muted">
-                                                    Expected impact: <span class="${action.impact > 0 ? 'text-green-600' : 'text-red-600'}">${action.impact > 0 ? '+' : ''}${action.impact}% risk reduction</span>
-                                                </div>
-                                            </div>
-                                            <button class="ml-4 px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors">
-                                                Implement
-                                            </button>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        
-                        <!-- Medication Management -->
-                        <div>
-                            <h5 class="font-medium text-clinical-text mb-3">Current Medications</h5>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <div class="space-y-2">
-                                    ${patient.medications.map(medication => `
-                                        <div class="flex items-center justify-between py-2">
-                                            <span class="text-sm text-clinical-text">${medication}</span>
-                                            <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">Active</span>
-                                                <button class="text-xs text-primary-600 hover:text-primary-700">Edit</button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Chart Rendering Methods
             initializeCharts() {
-                this.createPerformanceChart();
-                this.createCalibrationChart();
-                this.createROCChart();
-                this.createFeatureImportanceChart();
-            }
-            
-            createPerformanceChart() {
-                const ctx = document.getElementById('performanceChart').getContext('2d');
-                this.charts.performance = new Chart(ctx, {
+                // Performance Chart
+                const perfCtx = document.getElementById('performanceChart').getContext('2d');
+                this.charts.performance = new Chart(perfCtx, {
                     type: 'bar',
                     data: {
                         labels: ['AUROC', 'AUPRC', 'Sensitivity', 'Specificity', 'PPV', 'NPV'],
                         datasets: [{
-                            label: 'Score',
                             data: [0.82, 0.74, 0.85, 0.92, 0.78, 0.94],
                             backgroundColor: '#3b82f6',
-                            borderRadius: 4,
-                            borderSkipped: false
+                            borderRadius: 4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: {
-                                display: true,
-                                text: 'Model Performance Metrics'
-                            }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 1,
-                                title: {
-                                    display: true,
-                                    text: 'Score'
-                                }
-                            }
+                            y: { min: 0, max: 1, title: { display: true, text: 'Score' } }
                         }
                     }
                 });
-            }
-            
-            createCalibrationChart() {
-                const ctx = document.getElementById('calibrationChart').getContext('2d');
                 
-                // Generate calibration data
-                const calibrationData = [];
-                const perfectCalibration = [];
-                
-                for (let i = 0; i <= 10; i++) {
-                    const predicted = i / 10;
-                    const observed = predicted + (Math.random() - 0.5) * 0.1; // Add some realistic deviation
-                    calibrationData.push({ x: predicted, y: Math.max(0, Math.min(1, observed)) });
-                    perfectCalibration.push({ x: predicted, y: predicted });
-                }
-                
-                this.charts.calibration = new Chart(ctx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [{
-                            label: 'Model Calibration',
-                            data: calibrationData,
-                            backgroundColor: '#3b82f6',
-                            borderColor: '#3b82f6',
-                            pointRadius: 5
-                        }, {
-                            label: 'Perfect Calibration',
-                            data: perfectCalibration,
-                            type: 'line',
-                            borderColor: '#ef4444',
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Calibration Plot'
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: { display: true, text: 'Predicted Probability' },
-                                min: 0,
-                                max: 1
-                            },
-                            y: {
-                                title: { display: true, text: 'Observed Frequency' },
-                                min: 0,
-                                max: 1
-                            }
-                        }
-                    }
-                });
-            }
-            
-            createROCChart() {
-                const ctx = document.getElementById('rocChart').getContext('2d');
-                
-                // Generate ROC curve data
-                const rocData = [];
-                for (let i = 0; i <= 100; i++) {
-                    const fpr = i / 100;
-                    // Simulate a good ROC curve
-                    const tpr = Math.pow(fpr, 0.3) + (Math.random() - 0.5) * 0.05;
-                    rocData.push({ x: fpr, y: Math.max(0, Math.min(1, tpr)) });
-                }
-                
-                this.charts.roc = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: [{
-                            label: 'ROC Curve',
-                            data: rocData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            pointRadius: 0,
-                            tension: 0.4
-                        }, {
-                            label: 'Random Classifier',
-                            data: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
-                            borderColor: '#6b7280',
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: `ROC Curve (AUC = 0.82)`
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: { display: true, text: 'False Positive Rate' },
-                                min: 0,
-                                max: 1
-                            },
-                            y: {
-                                title: { display: true, text: 'True Positive Rate' },
-                                min: 0,
-                                max: 1
-                            }
-                        }
-                    }
-                });
-            }
-            
-            createFeatureImportanceChart() {
-                const ctx = document.getElementById('featureImportanceChart').getContext('2d');
-                
-                const features = [
-                    'Lactate Levels', 'Respiratory Rate', 'Age Factor', 'Blood Pressure',
-                    'Heart Rate Variability', 'Oxygen Saturation', 'Temperature',
-                    'Medication Adherence', 'Previous Hospitalizations', 'Comorbidity Count'
-                ];
-                
-                const importance = [0.18, 0.16, 0.14, 0.12, 0.10, 0.09, 0.08, 0.07, 0.04, 0.02];
-                
-                this.charts.featureImportance = new Chart(ctx, {
+                // Feature Importance Chart
+                const featCtx = document.getElementById('featureChart').getContext('2d');
+                this.charts.feature = new Chart(featCtx, {
                     type: 'bar',
                     data: {
-                        labels: features,
+                        labels: ['Lactate', 'Resp Rate', 'Age', 'BP', 'HR', 'Oxygen', 'Temp', 'Meds'],
                         datasets: [{
-                            label: 'SHAP Importance',
-                            data: importance,
+                            data: [0.18, 0.16, 0.14, 0.12, 0.10, 0.09, 0.08, 0.07],
                             backgroundColor: '#3b82f6',
                             borderRadius: 4
                         }]
@@ -2008,18 +1440,9 @@
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: {
-                                display: true,
-                                text: 'Global Feature Importance (Population Level)'
-                            }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            x: {
-                                title: { display: true, text: 'Mean SHAP Value' },
-                                beginAtZero: true
-                            }
+                            x: { title: { display: true, text: 'Importance' } }
                         }
                     }
                 });
@@ -2027,46 +1450,37 @@
             
             renderTimelineChart() {
                 const ctx = document.getElementById('patientTimelineChart');
-                if (!ctx) return;
+                if (!ctx || !this.selectedPatient) return;
                 
-                if (this.charts.patientTimeline) {
-                    this.charts.patientTimeline.destroy();
+                if (this.charts.timeline) {
+                    this.charts.timeline.destroy();
                 }
                 
-                const patient = this.state.selectedPatient;
-                const timelineData = patient.riskTimeline.map(point => ({
+                const timelineData = this.selectedPatient.riskTimeline.map(point => ({
                     x: point.date,
                     y: point.risk
                 }));
                 
-                this.charts.patientTimeline = new Chart(ctx.getContext('2d'), {
+                this.charts.timeline = new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
                         datasets: [{
-                            label: 'Predicted Risk',
+                            label: 'Risk Score',
                             data: timelineData,
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
-                            tension: 0.4,
-                            pointRadius: 2,
-                            pointHoverRadius: 6
+                            tension: 0.4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
                             x: {
                                 type: 'time',
-                                time: {
-                                    displayFormats: {
-                                        day: 'MMM d'
-                                    }
-                                },
+                                time: { displayFormats: { day: 'MMM d' } },
                                 title: { display: true, text: 'Date' }
                             },
                             y: {
@@ -2079,172 +1493,41 @@
                 });
             }
             
-            renderVitalsChart() {
-                const ctx = document.getElementById('vitalsChart');
-                if (!ctx) return;
-                
-                if (this.charts.vitals) {
-                    this.charts.vitals.destroy();
-                }
-                
-                const patient = this.state.selectedPatient;
-                const heartRateData = patient.vitalsHistory.map(point => ({
-                    x: point.date,
-                    y: point.heartRate
-                }));
-                
-                const bpSystolicData = patient.vitalsHistory.map(point => ({
-                    x: point.date,
-                    y: point.bloodPressure.systolic
-                }));
-                
-                this.charts.vitals = new Chart(ctx.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        datasets: [{
-                            label: 'Heart Rate (BPM)',
-                            data: heartRateData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            yAxisID: 'y',
-                            tension: 0.4
-                        }, {
-                            label: 'Systolic BP (mmHg)',
-                            data: bpSystolicData,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            yAxisID: 'y1',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    displayFormats: {
-                                        day: 'MMM d'
-                                    }
-                                },
-                                title: { display: true, text: 'Date' }
-                            },
-                            y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: { display: true, text: 'Heart Rate (BPM)' }
-                            },
-                            y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                title: { display: true, text: 'Blood Pressure (mmHg)' },
-                                grid: {
-                                    drawOnChartArea: false
-                                }
-                            }
-                        }
-                    }
-                });
+            updateLastUpdateTime() {
+                const now = new Date();
+                document.getElementById('lastUpdateTime').textContent = now.toLocaleTimeString();
             }
             
-            updatePatientCharts() {
-                if (this.state.currentTab === 'timeline') {
-                    setTimeout(() => this.renderTimelineChart(), 100);
-                } else if (this.state.currentTab === 'vitals') {
-                    setTimeout(() => this.renderVitalsChart(), 100);
+            scrollToSection(href) {
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
                 }
             }
             
-            // Utility Methods
-            getFilteredPatients() {
-                let filtered = [...this.state.patients];
+            showNotification(message, type = 'success') {
+                const container = document.getElementById('notifications');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
                 
-                // Risk level filter
-                if (this.state.filters.riskLevel === 'high') {
-                    filtered = filtered.filter(p => p.riskScore > this.state.settings.highRiskThreshold);
-                } else if (this.state.filters.riskLevel === 'medium') {
-                    filtered = filtered.filter(p => 
-                        p.riskScore >= this.state.settings.mediumRiskThreshold && 
-                        p.riskScore <= this.state.settings.highRiskThreshold
-                    );
-                } else if (this.state.filters.riskLevel === 'low') {
-                    filtered = filtered.filter(p => p.riskScore < this.state.settings.mediumRiskThreshold);
-                }
+                container.appendChild(notification);
                 
-                // Search filter
-                if (this.state.filters.search) {
-                    const searchTerm = this.state.filters.search.toLowerCase();
-                    filtered = filtered.filter(p => 
-                        p.name.toLowerCase().includes(searchTerm) ||
-                        p.id.toLowerCase().includes(searchTerm) ||
-                        this.formatCondition(p.condition).toLowerCase().includes(searchTerm)
-                    );
-                }
-                
-                return filtered.sort((a, b) => b.riskScore - a.riskScore);
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
             }
-            
-            getRiskClass(riskScore) {
-                if (riskScore > this.state.settings.highRiskThreshold) {
-                    return { label: 'High Risk', color: 'text-red-600', cssClass: 'risk-high' };
-                } else if (riskScore >= this.state.settings.mediumRiskThreshold) {
-                    return { label: 'Medium Risk', color: 'text-yellow-600', cssClass: 'risk-medium' };
-                } else {
-                    return { label: 'Low Risk', color: 'text-green-600', cssClass: 'risk-low' };
-                }
-            }
-            
-            getPatientStatus(riskScore) {
-                if (riskScore > this.state.settings.highRiskThreshold) return 'status-warning';
-                if (riskScore >= this.state.settings.mediumRiskThreshold) return 'status-online';
-                return 'status-online';
-            }
-            
-            formatCondition(condition) {
-                const conditionMap = {
-                    'type2_diabetes': 'Type 2 Diabetes',
-                    'heart_failure': 'Heart Failure',
-                    'copd': 'COPD',
-                    'hypertension': 'Hypertension',
-                    'ckd': 'Chronic Kidney Disease',
-                    'obesity': 'Obesity'
-                };
-                return conditionMap[condition] || condition;
-            }
-            
-            formatDate(date) {
-                if (typeof date === 'string') date = new Date(date);
-                return date.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-            
-            calculateRiskTrend(patient) {
-                const timeline = patient.riskTimeline.slice(0, 7); // Last 7 days
-                if (timeline.length < 2) return { direction: 'stable', change: 0 };
-                
-                const firstRisk = timeline[0].risk;
-                const lastRisk = timeline[timeline.length - 1].risk;
-                const change = lastRisk - firstRisk;
-                
-                if (Math.abs(change) < 5) {
-                    return { direction: 'stable', change: Math.round(change) };
-                } else if (change > 0) {
-                    return { direction: 'increasing', change: Math.round(change) };
-                } else {
-                    return { direction: 'decreasing', change: Math.round(Math.abs(change)) };
-                }
-            }
-            
-            getClinicalRecommendation(patient) {
-                const risk = patient.riskScore;
-                const condition = this.formatCondition(patient.condition);
-                
-                if (risk > 85) {
-                    return `Critical risk level detected. Immediate clinical
+        }
+        
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ClinicalDashboard();
+        });
+    </script>
+</body>
+</html>
