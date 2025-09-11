@@ -389,14 +389,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 *Built with ❤️ for better patient outcomes*
-```
-
-[1](https://stackoverflow.com/questions/24190085/markdown-multiline-code-blocks-in-tables-when-rows-have-to-be-specified-with-one)
-[2](https://www.markdownguide.org/basic-syntax/)
-[3](https://discourse.gohugo.io/t/multiple-content-parts-within-the-same-page/8337)
-[4](https://www.markdownguide.org/extended-syntax/)
-[5](https://gist.github.com/pierrejoubert73/902cc94d79424356a8d20be2b382e1ab)
-[6](https://learn.microsoft.com/en-us/azure/devops/project/wiki/markdown-guidance?view=azure-devops)
-[7](https://discourse.gohugo.io/t/embedding-multiple-pieces-of-markdown-content-in-a-template-with-page-bundles/48178)
-[8](https://www.jetbrains.com/help/hub/markdown-syntax.html)
+tbrains.com/help/hub/markdown-syntax.html)
 [9](https://docs.gitlab.com/user/markdown/)
