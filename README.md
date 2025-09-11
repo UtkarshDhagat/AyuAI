@@ -389,5 +389,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 *Built with ❤️ for better patient outcomes*
-tbrains.com/help/hub/markdown-syntax.html)
-[Gitlab](https://docs.gitlab.com/user/markdown/)
